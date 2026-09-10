@@ -1,0 +1,23 @@
+# Raw Source Parser — Versi Kita
+
+Parser lokal untuk membaca data mentah hasil copy-paste dan mengubahnya menjadi data terstruktur milik kita sendiri.
+
+## Fitur
+- Markdown table dengan `|`
+- TSV dari Excel/Google Sheets
+- Header ada/tidak ada
+- `<br>` dan Markdown `**nominal**`
+- Nominal `250.000`, `1,500.000`, `IDR 49,370,000.00`
+- Deteksi ID member berdasarkan prefix
+- Deteksi QRIS / manual / bonus
+- Filter status valid
+- Deduplicate transaksi identik
+- Tabel hasil audit
+- Export CSV
+- Tidak memakai database atau mengirim data ke server
+
+## Catatan
+Tool ini meniru pola kerja umum dari halaman referensi yang dapat dilihat publik, tetapi implementasinya dibuat ulang sebagai parser versi kita. Jangan menyalin kode sumber, kredensial, atau data privat dari situs lain.
+
+## Menjalankan
+Buka `index.html` langsung di browser atau gunakan Live Server di VS Code.
