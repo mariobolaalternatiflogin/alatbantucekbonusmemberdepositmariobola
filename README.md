@@ -1,20 +1,26 @@
-[README.md](https://github.com/user-attachments/files/32074092/README.md)
-# Deposit Bonus Checker — Versi Kita
+[README.md](https://github.com/user-attachments/files/32076076/README.md)
+# Deposit Bonus Checker V3
 
-Aplikasi HTML/CSS/JS standalone untuk audit bonus deposit harian. Tidak memakai backend dan tidak mengirim data keluar browser.
+Tool lokal untuk audit bonus deposit harian. Versi final dengan batas bonus maksimal Rp 100.000 per member per hari.
 
-## Cara pakai
-1. Buka `index.html` di browser atau upload seluruh folder ke hosting statis seperti GitHub Pages.
-2. Pilih Bonus 5% atau 10%.
-3. Paste data QRIS Pay, Deposit Manual, dan Bonus Deposit.
-4. Klik **Proses & Audit Bonus**.
-5. Hasil dapat diekspor ke CSV.
+## Aturan utama
+- Identitas member **hanya** dari kolom `User Name` dengan prefix tepat `BEB@` (huruf besar).
+- `beb@...` adalah admin dan tidak pernah diproses sebagai member.
+- `Edited By` hanya dicatat sebagai admin yang melakukan proses; tidak pernah menjadi ID/member dan tidak dipakai untuk grouping.
+- Hanya `Status = Confirmed` yang diproses.
+- Data QR Pay adalah deposit QRIS.
+- Pada sumber gabungan Deposit Manual + Bonus Deposit: jika ada `SCB A BONUS DEPOSIT HARIAN`, transaksi diklasifikasikan sebagai BONUS DEPOSIT; selain itu Member Deposit/Agent Deposit adalah DEPOSIT MANUAL.
+- Untuk satu member dan satu hari, semua deposit valid dijabarkan satu per satu sebagai riwayat. Total hari ditampilkan sebagai informasi.
+- Deposit **terbesar** pada hari tersebut menjadi dasar bonus; bukan total deposit.
+- Bonus = persentase terpilih (5% atau 10%) dari deposit terbesar, dengan maksimum **Rp 100.000 per member per hari**.
+- Pengecualian bonus: SB, NO BONUS, Safety, Safety Bet, NB, BATAL WD, WD DIKEMBALIKAN KE MEMBER, MEMBER LANJUT MAIN, WD DIKEMBALIKAN MEMBER LANJUT MAIN, Tidak mau bonus.
+- Beberapa bonus confirmed pada hari yang sama menghasilkan `DOBEL BONUS`.
+- Admin pada output diambil dari `Edited By` transaksi deposit yang menjadi basis.
 
-## Aturan implementasi
-- Hanya baris dengan `Confirmed` yang diproses.
-- `SCB A BONUS DEPOSIT HARIAN` diklasifikasikan sebagai BONUS, walaupun sumbernya Agent Deposit.
-- Agent Deposit tanpa marker tersebut masuk Deposit Manual.
-- Semua deposit valid pada tanggal yang sama ditampilkan sebagai total riwayat; deposit terbesar dipakai sebagai basis bonus.
-- Pengecualian: SB, NO BONUS, Safety, Safety Bet, NB, BATAL WD, WD DIKEMBALIKAN KE MEMBER, MEMBER LANJUT MAIN, WD DIKEMBALIKAN MEMBER LANJUT MAIN, Tidak mau bonus.
-- Lebih dari satu bonus confirmed untuk member + tanggal yang sama = DOBEL BONUS.
-- Data diproses lokal di browser.
+## Penggunaan
+Buka `index.html` di browser, pilih 5%/10%, paste QRIS dan sumber gabungan transaksi, lalu klik `Proses & Audit Bonus`.
+
+- Bonus **tidak pernah melebihi Rp 100.000** per member per hari. Contoh: deposit terbesar Rp 5.000.000 pada rate 5% menghasilkan hak bonus Rp 100.000, bukan Rp 250.000.
+- Riwayat deposit menampilkan **setiap deposit valid satu per satu**; total hari hanya informasi tambahan. Hanya deposit terbesar yang menjadi basis perhitungan bonus.
+- Sumber Deposit Manual dan Bonus Deposit sengaja digabung dalam satu input; filter `SCB A BONUS DEPOSIT HARIAN` menentukan klasifikasinya.
+- Duplikasi baris yang sama persis (hasil paste ganda) diabaikan agar tidak menggandakan deposit/bonus.
