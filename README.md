@@ -1,26 +1,60 @@
-[README.md](https://github.com/user-attachments/files/32076076/README.md)
-# Deposit Bonus Checker V3
+[Uploading README.md…]()
+# Deposit Bonus Checker — Final
 
-Tool lokal untuk audit bonus deposit harian. Versi final dengan batas bonus maksimal Rp 100.000 per member per hari.
+Tool lokal untuk mengaudit bonus deposit harian dari data copy-paste mentah.
 
-## Aturan utama
-- Identitas member **hanya** dari kolom `User Name` dengan prefix tepat `BEB@` (huruf besar).
-- `beb@...` adalah admin dan tidak pernah diproses sebagai member.
-- `Edited By` hanya dicatat sebagai admin yang melakukan proses; tidak pernah menjadi ID/member dan tidak dipakai untuk grouping.
-- Hanya `Status = Confirmed` yang diproses.
-- Data QR Pay adalah deposit QRIS.
-- Pada sumber gabungan Deposit Manual + Bonus Deposit: jika ada `SCB A BONUS DEPOSIT HARIAN`, transaksi diklasifikasikan sebagai BONUS DEPOSIT; selain itu Member Deposit/Agent Deposit adalah DEPOSIT MANUAL.
-- Untuk satu member dan satu hari, semua deposit valid dijabarkan satu per satu sebagai riwayat. Total hari ditampilkan sebagai informasi.
-- Deposit **terbesar** pada hari tersebut menjadi dasar bonus; bukan total deposit.
-- Bonus = persentase terpilih (5% atau 10%) dari deposit terbesar, dengan maksimum **Rp 100.000 per member per hari**.
-- Pengecualian bonus: SB, NO BONUS, Safety, Safety Bet, NB, BATAL WD, WD DIKEMBALIKAN KE MEMBER, MEMBER LANJUT MAIN, WD DIKEMBALIKAN MEMBER LANJUT MAIN, Tidak mau bonus.
-- Beberapa bonus confirmed pada hari yang sama menghasilkan `DOBEL BONUS`.
-- Admin pada output diambil dari `Edited By` transaksi deposit yang menjadi basis.
+## Input
 
-## Penggunaan
-Buka `index.html` di browser, pilih 5%/10%, paste QRIS dan sumber gabungan transaksi, lalu klik `Proses & Audit Bonus`.
+1. **Data QRIS Pay** — paste export QR Pay.
+2. **Data Deposit Manual + Bonus Deposit** — paste satu sumber gabungan Member Deposit / Agent Deposit / bonus.
+3. **Data Daftar New Member Harian** — paste daftar member baru pada hari tersebut.
 
-- Bonus **tidak pernah melebihi Rp 100.000** per member per hari. Contoh: deposit terbesar Rp 5.000.000 pada rate 5% menghasilkan hak bonus Rp 100.000, bukan Rp 250.000.
-- Riwayat deposit menampilkan **setiap deposit valid satu per satu**; total hari hanya informasi tambahan. Hanya deposit terbesar yang menjadi basis perhitungan bonus.
-- Sumber Deposit Manual dan Bonus Deposit sengaja digabung dalam satu input; filter `SCB A BONUS DEPOSIT HARIAN` menentukan klasifikasinya.
-- Duplikasi baris yang sama persis (hasil paste ganda) diabaikan agar tidak menggandakan deposit/bonus.
+## Parser copy-paste
+
+Parser sengaja dibuat toleran terhadap data seperti export Anda:
+
+- tabel Markdown dengan `|`;
+- header ada atau tidak ada;
+- `<br>` di dalam sel;
+- Markdown `**nominal**`;
+- escape seperti `BEB\@username`;
+- nominal Indonesia seperti `250.000`, `1,140.000`, `2,000.000`, serta format IDR desimal;
+- posisi kolom transaksi 11 kolom seperti data export Anda meskipun header tidak ikut tercopy.
+
+## Aturan audit
+
+- Hanya baris **Confirmed** yang diproses.
+- Member hanya jika `User Name` diawali tepat `BEB@` huruf besar. `beb@` tidak dianggap member.
+- `SCB A BONUS DEPOSIT HARIAN` selalu diklasifikasikan sebagai **BONUS**.
+- QR Pay diklasifikasikan sebagai **QRIS**.
+- Member Deposit / Agent Deposit yang bukan bonus diklasifikasikan sebagai **MANUAL**.
+- Semua deposit valid pada tanggal yang sama ditampilkan satu per satu.
+- Deposit terbesar pada tanggal tersebut menjadi **basis bonus**.
+- Bonus maksimal adalah **Rp100.000 per member per hari**.
+- Bonus confirmed lebih dari satu pada hari yang sama diberi status **DOBEL BONUS**.
+- Duplikat hanya dihapus bila identitas transaksi lengkap sama; transaksi berbeda tetap dipertahankan.
+
+## New Member
+
+Data daftar new member digunakan sebagai sumber pembanding, bukan sebagai transaksi.
+
+Tool mengambil:
+
+- ID `BEB@`;
+- tanggal daftar;
+- waktu daftar bila tersedia;
+- agent/operator bila tersedia.
+
+Kemudian tool mencari transaksi QRIS + manual confirmed paling awal untuk member tersebut. Jika **tanggal daftar = tanggal deposit pertama**, kolom **New Member Hari Daftar** menjadi `YA`.
+
+Jadi audit dapat menjawab:
+
+> Member mana yang baru daftar hari ini dan langsung melakukan deposit pertama pada hari yang sama?
+
+## Export
+
+Tombol Export CSV menyimpan hasil audit termasuk riwayat deposit, basis bonus, bonus diberikan, tanggal daftar, waktu deposit pertama, dan indikator New Member.
+
+## Jalankan
+
+Buka `index.html` langsung di browser. Tidak membutuhkan server atau database.
