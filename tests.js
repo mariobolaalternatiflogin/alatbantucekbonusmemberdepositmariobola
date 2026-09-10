@@ -4,3 +4,18 @@ const input=`| User Name | From Bank | To Bank | Amount | Date | Payment Method 
 const p=A.parseSource(input);assert(p.length===3,'Admin lowercase harus diabaikan');assert(p.filter(x=>x.id==='BEB@TEST').length===3,'Semua User Name BEB@ harus diproses');assert(p.some(x=>x.type==='BONUS'),'SCB A BONUS DEPOSIT HARIAN harus BONUS');assert(p.filter(x=>x.type==='MANUAL').length===2,'Deposit manual tanpa marker harus MANUAL');assert(A.amount('5.000.000')===5000000,'Format nominal Indonesia gagal');assert(A.amount('IDR 49,370,000.00')===49370000,'Format nominal IDR gagal');
 console.log('TESTS PASSED');
 })();
+
+(function(){
+const assert=(c,m)=>{if(!c)throw new Error(m)};
+const A=window.DepositBonusChecker;
+const input=`| User Name | From Bank | To Bank | Amount | Date | Payment Method | Status | Status Date | Remark | Edited By |
+| BEB@CAP | BCA | X | 5.000.000 | 11/09/2026 | Member Deposit | Confirmed | 11/09/2026 01:00:00 AM | | beb@Admin |
+| BEB@CAP | BCA | X | 50.000 | 11/09/2026 | Member Deposit | Confirmed | 11/09/2026 01:05:00 AM | | beb@Admin |
+| beb@ADMIN | BCA | X | 99.000.000 | 11/09/2026 | Member Deposit | Confirmed | 11/09/2026 01:10:00 AM | | beb@Admin |
+| BEB@CAP | SCB | SCB A BONUS DEPOSIT HARIAN 01 | 100.000 | 11/09/2026 | Agent Deposit | Confirmed | 11/09/2026 01:06:00 AM | | beb@Admin |`;
+const p=A.parseSource(input);
+assert(p.filter(x=>x.id==='BEB@CAP'&&x.type==='MANUAL').length===2,'Riwayat semua deposit gagal');
+assert(p.filter(x=>x.id==='beb@ADMIN').length===0,'Prefix lowercase salah diproses');
+assert(p.filter(x=>x.type==='BONUS').length===1,'Marker bonus gagal dipisahkan');
+console.log('CAP/PREFIX/BONUS TEST PASSED');
+})();
