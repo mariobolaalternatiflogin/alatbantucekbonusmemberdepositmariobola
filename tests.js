@@ -16,3 +16,18 @@ assert(bad.length===0,'Pending rejected');
 const bonus=api.parseSource('| BEB@A | SCB A BONUS DEPOSIT HARIAN | 5.000 | 11/09/2026 02:21:03 AM | Agent Deposit | Confirmed | beb@mario08 |','BONUS');
 assert(bonus[0].type==='BONUS','bonus parse');
 console.log('ALL TESTS PASSED');
+const header='User Name\tFrom Bank\tTo Bank\tAmount\tDate\tPayment Method\tStatus\tStatus Date\tRemark\tEdited By';
+const headerRows=[
+ header,
+ 'BEB@member01\tBCA A\tBCA B\t100.000\t11/09/2026 01:00:00 AM\tMember Deposit\tConfirmed\t11/09/2026 01:01:00 AM\t\tadmin_repeated',
+ 'BEB@member01\tDANA A\tDANA B\t250.000\t11/09/2026 02:00:00 AM\tMember Deposit\tConfirmed\t11/09/2026 02:01:00 AM\t\tadmin_repeated',
+ 'BEB@member01\tBCA A\tBCA B\t999.000\t11/09/2026 03:00:00 AM\tMember Deposit\tPending\t11/09/2026 03:01:00 AM\t\tadmin_repeated'
+].join('\n');
+const parsedHeader=api.parseSource(headerRows,'MANUAL');
+assert(parsedHeader.length===2,'Header parser should use User Name and ignore Pending');
+assert(parsedHeader[0].id==='beb@member01' && parsedHeader[1].id==='beb@member01','User Name is grouping key');
+assert(parsedHeader[0].agent==='admin_repeated' && parsedHeader[1].agent==='admin_repeated','Edited By captured only as agent');
+const editedOnlyDifferent='BEB@realmember\tBCA\tSCB\t200.000\t11/09/2026 04:00:00 AM\tMember Deposit\tConfirmed\t11/09/2026 04:01:00 AM\t\tBEB@anotheradmin';
+const ep=api.parseSource(header+'\n'+editedOnlyDifferent,'MANUAL');
+assert(ep.length===1 && ep[0].displayId==='BEB@realmember','Edited By must never become member');
+console.log('USER NAME / EDITED BY TESTS PASSED');
