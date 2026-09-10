@@ -1,3 +1,4 @@
+[README.md](https://github.com/user-attachments/files/32074092/README.md)
 # Deposit Bonus Checker — Versi Kita
 
 Aplikasi HTML/CSS/JS standalone untuk audit bonus deposit harian. Tidak memakai backend dan tidak mengirim data keluar browser.
