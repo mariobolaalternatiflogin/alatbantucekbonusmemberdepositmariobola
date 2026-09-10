@@ -197,13 +197,37 @@ function audit(qrisText,manualText,newMemberText){
   return{rows,all,registrations:[...regMap.values()]};
 }
 function process(){
-  const result=audit($('qris').value,$('transactions').value,$('newMembers').value);window.__lastRows=result.rows;
-  render(result.rows,result.all.length,result.registrations.length);
-  $('export').disabled=!result.rows.length;$('status').textContent='Audit selesai';
+  try{
+    const qrisText=$('qris').value||'', manualText=$('transactions').value||'', newMemberText=$('newMembers').value||'';
+    if(!qrisText.trim()&&!manualText.trim()&&!newMemberText.trim()){
+      $('status').textContent='Belum ada data input';
+      $('summary').textContent='Masukkan minimal data QRIS atau Deposit Manual + Bonus, lalu klik Proses & Audit.';
+      render([],0,0);
+      $('export').disabled=true;
+      return;
+    }
+    const parsed=parseSource(qrisText+'\n'+manualText);
+    const result=audit(qrisText,manualText,newMemberText);
+    window.__lastRows=result.rows;
+    render(result.rows,result.all.length,result.registrations.length,parsed);
+    $('export').disabled=!result.rows.length;
+    $('status').textContent=`Audit selesai • ${parsed.length} baris transaksi terbaca`;
+  }catch(err){
+    console.error('Deposit Bonus Checker audit error:',err);
+    $('status').textContent='Terjadi error saat audit';
+    $('summary').textContent='Parser mengalami error: '+(err&&err.message?err.message:String(err));
+    $('export').disabled=true;
+  }
 }
-function render(rows,count,regCount){
+function render(rows,count,regCount,parsed){
   const newCount=rows.filter(r=>r.sameDayNewMember).length;
-  $('summary').textContent=`${rows.length} member • ${count} baris Confirmed terbaca • Bonus ${rate()*100}% • Maks. Rp 100.000/member • ${regCount} data daftar • ${newCount} deposit pertama di hari daftar`;
+  const txCount=Number.isFinite(parsed)?parsed:count;
+  const depositCount=rows.reduce((n,r)=>n+(r.depositHistory?r.depositHistory.length:0),0);
+  const bonusCount=txCount-depositCount;
+  $('summary').textContent=`${rows.length} member berdeposit • ${txCount} baris transaksi terbaca • ${depositCount} deposit • ${Math.max(0,bonusCount)} bonus • Bonus ${rate()*100}% • Maks. Rp 100.000/member • ${regCount} data daftar • ${newCount} deposit pertama di hari daftar`;
+  if(!rows.length&&txCount>0){
+    $('summary').textContent+=` Tidak ada member yang memiliki deposit QRIS/manual valid. Data yang terbaca mungkin hanya berupa baris BONUS.`;
+  }
   const body=$('resultBody');
   if(!rows.length){body.innerHTML='<tr><td colspan="13" class="empty">Tidak ada data yang memenuhi syarat.</td></tr>';return}
   body.innerHTML=rows.map((r,i)=>`<tr><td>${i+1}</td><td><strong>${esc(r.id)}</strong><br><small>${esc(r.day)}</small></td><td>${r.depositHistory.map(x=>`Rp ${fmt(x)}`).join('<br>')}<hr><strong>Total: Rp ${fmt(r.all)}</strong></td><td>Rp ${fmt(r.basis)}</td><td>Rp ${fmt(r.should)}</td><td>Rp ${fmt(r.given)}</td><td><span class="${r.cls}">${esc(r.statusText)}</span></td><td>${esc(r.time)}</td><td>${r.registrationDate?esc(r.registrationDate):'-'}</td><td>Rp ${fmt(r.firstDeposit)}<br><small>${esc(r.firstDepositTime)}</small></td><td>${r.sameDayNewMember?'<span class="ok">YA</span>':'-'}</td><td>${esc(r.agent)}</td><td>${esc(r.detail)}</td></tr>`).join('');
