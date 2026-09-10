@@ -1,98 +1,75 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Raw Source Parser — Versi Kita</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MARIOBOLA — Data Processor</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<main class="wrap">
-<header>
-  <div>
-    <span class="eyebrow">WORKING TOOLS • VERSI KITA</span>
-    <h1>Raw Source Parser</h1>
-    <p>Baca data mentah dari beberapa sumber, normalkan formatnya, lalu tampilkan hasil audit dalam format kita sendiri.</p>
-  </div>
-  <div class="status" id="status">Siap digunakan</div>
-</header>
+  <header class="topbar">
+    <div class="brand">MARIO<span>BOLA</span></div>
+    <div class="status"><i></i> Processor Online</div>
+  </header>
 
-<section class="card">
-  <div class="sectionhead">
-    <div>
-      <h2>1. Sumber data mentah</h2>
-      <p>Tempel hasil copy-paste. Parser menerima tabel <b>Markdown</b>, <b>TSV</b>, atau baris biasa dengan kolom yang dikenali.</p>
-    </div>
-    <button class="ghost" id="clear">Kosongkan</button>
-  </div>
-  <textarea id="source" placeholder="Contoh:
-| User Name | Amount | Date | Payment Method | Status | Remark |
-| BEB@contoh | 250.000 | 11/09/2026 10:30:00 AM | QR Pay | Confirmed | |
+  <main class="container">
+    <section class="hero">
+      <p class="eyebrow">DATA PROCESSOR</p>
+      <h1>Deposit & New Member</h1>
+      <p>Tempel data sumber mentah, pilih jenis sumber, lalu proses. Data diproses langsung di browser.</p>
+    </section>
 
-atau paste langsung dari Excel/Google Sheets..."></textarea>
-</section>
+    <nav class="tabs">
+      <button class="tab active" data-type="qris">DEPOSIT QRIS PAY</button>
+      <button class="tab" data-type="manual">DEPOSIT MANUAL</button>
+      <button class="tab" data-type="newmember">NEW MEMBER HARIAN</button>
+    </nav>
 
-<section class="card">
-  <div class="sectionhead">
-    <div>
-      <h2>2. Aturan parser</h2>
-      <p>Aturan dapat disesuaikan tanpa mengubah data sumber.</p>
-    </div>
-  </div>
-  <div class="rulegrid">
-    <label><b>ID member</b><span>Prefix <code>BEB@</code></span><input id="prefix" value="BEB@" /></label>
-    <label><b>Bonus marker</b><span>Teks yang dianggap transaksi bonus</span><input id="bonusMark" value="SCB A BONUS DEPOSIT HARIAN" /></label>
-    <label><b>Status valid</b><span>Hanya status ini diproses</span><input id="validStatus" value="Confirmed" /></label>
-    <label><b>Maksimum bonus</b><span>Per member per hari</span><input id="maxBonus" value="100000" /></label>
-  </div>
-</section>
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2 id="sourceTitle">Deposit QRIS Pay</h2>
+          <p id="sourceHelp">Parser khusus format transaksi QR Pay seperti data sumber yang diberikan.</p>
+        </div>
+        <div class="actions">
+          <button id="sampleBtn" class="btn secondary">Contoh</button>
+          <button id="clearBtn" class="btn danger">Clear</button>
+          <button id="processBtn" class="btn primary">PROSES DATA</button>
+        </div>
+      </div>
 
-<section class="actions">
-  <button id="process" class="primary">Baca & Parse Data</button>
-  <button id="sample" class="secondary">Muat Contoh</button>
-  <button id="export" class="secondary" disabled>Export CSV</button>
-</section>
+      <textarea id="rawData" spellcheck="false" placeholder="Paste data sumber mentah di sini..."></textarea>
 
-<section class="stats" id="stats">
-  <div class="stat"><b id="sRows">0</b><span>Baris terbaca</span></div>
-  <div class="stat"><b id="sValid">0</b><span>Transaksi valid</span></div>
-  <div class="stat"><b id="sMembers">0</b><span>Member unik</span></div>
-  <div class="stat"><b id="sBonus">0</b><span>Baris bonus</span></div>
-</section>
+      <div class="stats">
+        <div><b id="count">0</b><span>Data terbaca</span></div>
+        <div><b id="total">Rp 0</b><span>Total nominal</span></div>
+        <div><b id="unique">0</b><span>Member unik</span></div>
+        <div><b id="errors">0</b><span>Perlu dicek</span></div>
+      </div>
+    </section>
 
-<section class="card">
-  <div class="sectionhead">
-    <div>
-      <h2>Hasil pembacaan</h2>
-      <p id="summary">Belum ada hasil.</p>
-    </div>
-  </div>
-  <div class="tablewrap">
-    <table>
-      <thead>
-        <tr>
-          <th>No.</th><th>ID Member</th><th>Tanggal</th><th>Waktu</th>
-          <th>Nominal</th><th>Tipe</th><th>Status</th><th>Agent</th><th>Keterangan</th>
-        </tr>
-      </thead>
-      <tbody id="resultBody">
-        <tr><td colspan="9" class="empty">Masukkan data mentah lalu klik Baca & Parse Data.</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
+    <section class="panel result-panel">
+      <div class="panel-head">
+        <div>
+          <h2>Hasil Pembacaan</h2>
+          <p id="resultNote">Belum ada data yang diproses.</p>
+        </div>
+        <div class="actions">
+          <input id="search" class="search" placeholder="Cari member / bank / nominal...">
+          <button id="csvBtn" class="btn secondary">Export CSV</button>
+        </div>
+      </div>
 
-<section class="card">
-  <h2>Bagaimana parser bekerja</h2>
-  <div class="flow">
-    <div><b>01</b><span>Deteksi header / posisi kolom</span></div>
-    <div><b>02</b><span>Normalisasi HTML, Markdown, tab, nominal</span></div>
-    <div><b>03</b><span>Deteksi member, tipe, tanggal dan status</span></div>
-    <div><b>04</b><span>Hapus duplikat identik</span></div>
-    <div><b>05</b><span>Tampilkan data versi kita</span></div>
-  </div>
-</section>
-</main>
-<script src="app.js?v=1"></script>
+      <div class="table-wrap">
+        <table id="resultTable">
+          <thead><tr id="headRow"></tr></thead>
+          <tbody id="bodyRows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>© 2026 MARIOBOLA — Local browser processing</footer>
+  <script src="app.js"></script>
 </body>
 </html>
